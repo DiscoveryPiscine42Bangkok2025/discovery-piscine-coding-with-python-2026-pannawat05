@@ -4,4 +4,4 @@ if (n > 25):
     print('ERROR')
 else:
     for i in range (n,26):
-        print(f'Inside the loop, my variable is {i}')
+        print(f'Inside the loop, my variable is {i})
