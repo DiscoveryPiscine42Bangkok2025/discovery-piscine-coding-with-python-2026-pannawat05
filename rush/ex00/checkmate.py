@@ -1,90 +1,138 @@
-
-
-
-   
-
-
-
-
 def find_king(board):
-    for y in range(4):
-        for x in range(4):
+    rows = len(board)
+    cols = len(board[0])
+    for y in range(rows):
+        for x in range(cols):
             if board[y][x] == 'K':
                 return (x, y)
     return None
 
-def find_rook(board):
-    for y in range(4):
-        for x in range(4):
-            if board[y][x] == 'R':
-                return (x, y)
-    return None
-def find_pawn(board):
-    for y in range(4):
-        for x in range(4):
-            if board[y][x] == 'P':
-                return (x, y)
-    return None
+# def find_rook(board):
+#     rows = len(board)
+#     cols = len(board[0])
+#     for y in range(rows):
+#         for x in range(cols):
+#             if board[y][x] == 'R':
+#                 return (x, y)
+#     return None
+# def find_pawn(board):
+#     rows = len(board)
+#     cols = len(board[0])
+#     for y in range(rows):
+#         for x in range(cols):
+#             if board[y][x] == 'P':
+#                 return (x, y)
+#     return None
 
-def find_queen(board):
-    for y in range(4):
-        for x in range(4):
-            if board[y][x] == 'Q':
-                return (x, y)
-    return None
+# def find_queen(board):
+#     rows = len(board)
+#     cols = len(board[0])
+#     for y in range(rows):
+#         for x in range(cols):
+#             if board[y][x] == 'Q':
+#                 return (x, y)
+#     return None
 
-def find_bishop(board):
-        for y in range(4):
-            for x in range(4):
-                if board[y][x] == 'B':
-                    return (x, y)
-        return None
+# def find_bishop(board):
+#     rows = len(board)
+#     cols = len(board[0])
+#     for y in range(rows):
+#         for x in range(cols):
+#                 if board[y][x] == 'B':
+#                     return (x, y)
+#         return None
 
-def attack_by_rook(king_pos, rook_pos):
-    king_x, king_y = king_pos
-    rook_x, rook_y = rook_pos
-    if king_x == rook_x or king_y == rook_y:
-        return True
-    return False
+def attack_by_rook(board, king_pos, rook_pos):
+    kx, ky = king_pos
+    rx, ry = rook_pos
+    
+    if kx != rx and ky != ry:
+        return False
+
+    step_x = 0 if kx == rx else (1 if kx > rx else -1)
+    step_y = 0 if ky == ry else (1 if ky > ry else -1)
+    
+    curr_x, curr_y = rx + step_x, ry + step_y
+    
+    while (curr_x, curr_y) != (kx, ky):
+        if board[curr_y][curr_x] != '.':
+            return False
+        curr_x += step_x
+        curr_y += step_y
+        
+    return True
+
+def attack_by_bishop(board, king_pos, bishop_pos):
+    kx, ky = king_pos
+    bx, by = bishop_pos
+
+    if abs(kx - bx) != abs(ky - by):
+        return False
+
+    step_x = 1 if kx > bx else -1
+    step_y = 1 if ky > by else -1
+    
+    curr_x, curr_y = bx + step_x, by + step_y
+    
+    while (curr_x, curr_y) != (kx, ky):
+        if board[curr_y][curr_x] != '.':
+            return False
+        curr_x += step_x
+        curr_y += step_y
+
+    return True
+
+def attack_by_queen(board, king_pos, queen_pos):
+    return attack_by_rook(board, king_pos, queen_pos) or attack_by_bishop(board, king_pos, queen_pos)
 
 def attack_by_pawn(king_pos, pawn_pos):
-    king_x, king_y = king_pos
-    pawn_x, pawn_y = pawn_pos
-    if king_y == pawn_y - 1 and abs(king_x - pawn_x) == 1:
+    kx, ky = king_pos
+    px, py = pawn_pos
+    if ky == py - 1 and abs(kx - px) == 1:
         return True
     return False
 
-def attack_by_queen(king_pos, queen_pos):
-    king_x, king_y = king_pos
-    queen_x, queen_y = queen_pos
-    if king_x == queen_x or king_y == queen_y or abs(king_x - queen_x) == abs(king_y - queen_y):
-        return True
-    return False
+def checkmate(boards):
+    board = [line.strip() for line in boards.strip().split('\n')]
+        
+    if not board:
+        print("Fail")
+        return
 
-def attack_by_bishop(king_pos, bishop_pos):
-    king_x, king_y = king_pos
-    bishop_x, bishop_y = bishop_pos
-    if abs(king_x - bishop_x) == abs(king_y - bishop_y):
-        return True
-    return False
+    rows = len(board)
+    cols = len(board[0])
+        
+    for i in board:
+       if len(i) != cols:
+            print("Fail")
+            return
 
-def checkmate(board):
     king_pos = find_king(board)
-    rook_pos = find_rook(board)
-    pawn_pos = find_pawn(board)
-    queen_pos = find_queen(board)
-    bishop_pos = find_bishop(board)
+    # rook_pos = find_rook(board)
+    # pawn_pos = find_pawn(board)
+    # queen_pos = find_queen(board)
+    # bishop_pos = find_bishop(board)
+    if not king_pos:
+        print("Fail")
+        return
 
-    if rook_pos and attack_by_rook(king_pos, rook_pos):
-        return 'Success'
-    if pawn_pos and attack_by_pawn(king_pos, pawn_pos):
-        return 'Success'
-    if queen_pos and attack_by_queen(king_pos, queen_pos):
-        return 'Success'
-    if bishop_pos and attack_by_bishop(king_pos, bishop_pos):
-        return  'Success'
+    for y in range(rows):
+        for x in range(cols):
+            piece = board[y][x]
+            enemy_pos = (x, y)
+            is_check = False
 
-    return 'Fail'
+            if piece == 'R':
+                is_check = attack_by_rook(board, king_pos, enemy_pos)
+            elif piece == 'B':
+                is_check = attack_by_bishop(board, king_pos, enemy_pos)
+            elif piece == 'Q':
+                is_check = attack_by_queen(board, king_pos, enemy_pos)
+            elif piece == 'P':
+                is_check = attack_by_pawn(king_pos, enemy_pos)
+                
+            if is_check:
+                print("Success")
+                return
 
-
-
+    print("Fail")
